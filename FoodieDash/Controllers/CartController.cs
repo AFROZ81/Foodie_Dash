@@ -43,5 +43,23 @@ namespace FoodieDash.Controllers
             // 5. Go back to Home Page
             return RedirectToAction("Index", "Home");
         }
+        public IActionResult Remove(int id)
+        {
+            // 1. Get the current cart
+            List<MenuItem> cart = HttpContext.Session.GetObject<List<MenuItem>>("MyCart") ?? new List<MenuItem>();
+
+            // 2. Find the item
+            var itemToRemove = cart.FirstOrDefault(i => i.Id == id);
+
+            // 3. Remove it
+            if (itemToRemove != null)
+            {
+                cart.Remove(itemToRemove);
+                HttpContext.Session.SetObject("MyCart", cart);
+            }
+
+            // 4. Reload the page
+            return RedirectToAction(nameof(Index));
+        }
     }
 }
