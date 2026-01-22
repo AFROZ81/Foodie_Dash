@@ -61,5 +61,68 @@ namespace FoodieDash.Controllers
             // 4. Reload the page
             return RedirectToAction(nameof(Index));
         }
+        public IActionResult Summary()
+        {
+            // Get the cart from session
+            List<MenuItem> cart = HttpContext.Session.GetObject<List<MenuItem>>("MyCart") ?? new List<MenuItem>();
+
+            // If empty, kick them out
+            if (cart.Count == 0)
+            {
+                return RedirectToAction(nameof(Index));
+            }
+
+            return View(cart);
+        }
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> PlaceOrder(string PickupName, string PhoneNumber, string Email)
+        {
+            // 1. Get Cart
+            List<MenuItem> cart = HttpContext.Session.GetObject<List<MenuItem>>("MyCart") ?? new List<MenuItem>();
+
+            if (cart != null)
+            {
+                // 2. Create Header (The Receipt)
+                OrderHeader orderHeader = new OrderHeader
+                {
+                    PickupName = PickupName,
+                    PhoneNumber = PhoneNumber,
+                    Email = Email,
+                    OrderDate = DateTime.Now,
+                    OrderTotal = cart.Sum(x => x.Price)
+                };
+
+                _context.OrderHeaders.Add(orderHeader);
+                await _context.SaveChangesAsync(); // Save to get the generated ID
+
+                // 3. Create Details (The Line Items)
+                foreach (var item in cart)
+                {
+                    OrderDetail orderDetail = new OrderDetail
+                    {
+                        OrderHeaderId = orderHeader.Id, // Link to the header above
+                        MenuItemId = item.Id,
+                        Name = item.Name,
+                        Price = item.Price
+                    };
+                    _context.OrderDetails.Add(orderDetail);
+                }
+
+                await _context.SaveChangesAsync();
+
+                // 4. Clear the Session (Cart is now empty)
+                HttpContext.Session.Remove("MyCart");
+
+                return RedirectToAction("OrderConfirmation", new { id = orderHeader.Id });
+            }
+
+            return RedirectToAction(nameof(Index));
+        }
+
+        public IActionResult OrderConfirmation(int id)
+        {
+            return View(id); // Simple view to say "Thank You"
+        }
     }
 }
