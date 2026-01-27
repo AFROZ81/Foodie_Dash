@@ -1,6 +1,6 @@
 ﻿using FoodieDash.Data;
 using FoodieDash.Models;
-using FoodieDash.Utility; // Import the helper we just made
+using FoodieDash.Utility;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FoodieDash.Controllers
@@ -16,57 +16,71 @@ namespace FoodieDash.Controllers
 
         public IActionResult Index()
         {
-            // 1. Get the current list of items from the Session
-            List<MenuItem> cart = HttpContext.Session.GetObject<List<MenuItem>>("MyCart") ?? new List<MenuItem>();
-
-            // 2. Pass it to the view
+            List<CartItem> cart = HttpContext.Session.GetObject<List<CartItem>>("MyCart") ?? new List<CartItem>();
             return View(cart);
         }
 
         public IActionResult Add(int id)
         {
-            // 1. Find the product in the database
             MenuItem? itemToAdd = _context.MenuItems.Find(id);
+            if (itemToAdd == null) return NotFound();
 
-            if (itemToAdd != null)
+            List<CartItem> cart = HttpContext.Session.GetObject<List<CartItem>>("MyCart") ?? new List<CartItem>();
+
+            // Check if item already exists in cart
+            var existingItem = cart.FirstOrDefault(c => c.MenuItem.Id == id);
+
+            if (existingItem != null)
             {
-                // 2. Get the existing cart (or create a new one if empty)
-                List<MenuItem> cart = HttpContext.Session.GetObject<List<MenuItem>>("MyCart") ?? new List<MenuItem>();
-
-                // 3. Add the new item
-                cart.Add(itemToAdd);
-
-                // 4. Save the updated list back to Session
-                HttpContext.Session.SetObject("MyCart", cart);
+                // Item exists, just increase quantity
+                existingItem.Quantity++;
+            }
+            else
+            {
+                // Item is new, add it with Qty 1
+                cart.Add(new CartItem { MenuItem = itemToAdd, Quantity = 1 });
             }
 
-            // 5. Go back to Home Page
-            return RedirectToAction("Index", "Home");
+            HttpContext.Session.SetObject("MyCart", cart);
+            return RedirectToAction("Index"); // Go straight to cart to see the update
         }
+
+        public IActionResult Minus(int id)
+        {
+            List<CartItem> cart = HttpContext.Session.GetObject<List<CartItem>>("MyCart") ?? new List<CartItem>();
+            var existingItem = cart.FirstOrDefault(c => c.MenuItem.Id == id);
+
+            if (existingItem != null)
+            {
+                if (existingItem.Quantity > 1)
+                {
+                    existingItem.Quantity--;
+                }
+                else
+                {
+                    cart.Remove(existingItem);
+                }
+            }
+            HttpContext.Session.SetObject("MyCart", cart);
+            return RedirectToAction(nameof(Index));
+        }
+
         public IActionResult Remove(int id)
         {
-            // 1. Get the current cart
-            List<MenuItem> cart = HttpContext.Session.GetObject<List<MenuItem>>("MyCart") ?? new List<MenuItem>();
-
-            // 2. Find the item
-            var itemToRemove = cart.FirstOrDefault(i => i.Id == id);
-
-            // 3. Remove it
+            List<CartItem> cart = HttpContext.Session.GetObject<List<CartItem>>("MyCart") ?? new List<CartItem>();
+            var itemToRemove = cart.FirstOrDefault(c => c.MenuItem?.Id == id);
             if (itemToRemove != null)
             {
                 cart.Remove(itemToRemove);
-                HttpContext.Session.SetObject("MyCart", cart);
             }
-
-            // 4. Reload the page
+            HttpContext.Session.SetObject("MyCart", cart);
             return RedirectToAction(nameof(Index));
         }
+
         public IActionResult Summary()
         {
-            // Get the cart from session
-            List<MenuItem> cart = HttpContext.Session.GetObject<List<MenuItem>>("MyCart") ?? new List<MenuItem>();
+            var cart = HttpContext.Session.GetObject<List<CartItem>>("MyCart") ?? new List<CartItem>();
 
-            // If empty, kick them out
             if (cart.Count == 0)
             {
                 return RedirectToAction(nameof(Index));
@@ -74,55 +88,53 @@ namespace FoodieDash.Controllers
 
             return View(cart);
         }
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> PlaceOrder(string PickupName, string PhoneNumber, string Email)
         {
-            // 1. Get Cart
-            List<MenuItem> cart = HttpContext.Session.GetObject<List<MenuItem>>("MyCart") ?? new List<MenuItem>();
+            List<CartItem> cart = HttpContext.Session.GetObject<List<CartItem>>("MyCart") ?? new List<CartItem>();
 
             if (cart != null)
             {
-                // 2. Create Header (The Receipt)
+                // Create Header
                 OrderHeader orderHeader = new OrderHeader
                 {
                     PickupName = PickupName,
                     PhoneNumber = PhoneNumber,
                     Email = Email,
                     OrderDate = DateTime.Now,
-                    OrderTotal = cart.Sum(x => x.Price)
+                    OrderTotal = cart.Sum(x => x.MenuItem.Price * x.Quantity) // Calculate Total with Qty
                 };
 
                 _context.OrderHeaders.Add(orderHeader);
-                await _context.SaveChangesAsync(); // Save to get the generated ID
+                await _context.SaveChangesAsync();
 
-                // 3. Create Details (The Line Items)
+                // Create Details
                 foreach (var item in cart)
                 {
                     OrderDetail orderDetail = new OrderDetail
                     {
-                        OrderHeaderId = orderHeader.Id, // Link to the header above
-                        MenuItemId = item.Id,
-                        Name = item.Name,
-                        Price = item.Price
+                        OrderHeaderId = orderHeader.Id,
+                        MenuItemId = item.MenuItem.Id,
+                        Name = item.MenuItem.Name,
+                        Price = item.MenuItem.Price,
+                        Count = item.Quantity // Save the Quantity!
                     };
                     _context.OrderDetails.Add(orderDetail);
                 }
 
                 await _context.SaveChangesAsync();
-
-                // 4. Clear the Session (Cart is now empty)
                 HttpContext.Session.Remove("MyCart");
 
                 return RedirectToAction("OrderConfirmation", new { id = orderHeader.Id });
             }
-
             return RedirectToAction(nameof(Index));
         }
 
         public IActionResult OrderConfirmation(int id)
         {
-            return View(id); // Simple view to say "Thank You"
+            return View(id);
         }
     }
 }
