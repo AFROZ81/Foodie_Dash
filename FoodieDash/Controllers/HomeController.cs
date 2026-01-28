@@ -1,28 +1,33 @@
 using FoodieDash.Data;
-using FoodieDash.Models;
+using FoodieDash.Models;             // Required to see MenuItem class
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore; // Required for database access
 using System.Diagnostics;
+// (Make sure your namespace matches your project name)
 
 namespace FoodieDash.Controllers
 {
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
-        private readonly ApplicationDbContext _context; // 1. Add Database variable
+        private readonly ApplicationDbContext _context; // 1. Add Database Context
 
-        // 2. Inject the Database in the constructor
+        // 2. Inject Database Context in Constructor
         public HomeController(ILogger<HomeController> logger, ApplicationDbContext context)
         {
             _logger = logger;
             _context = context;
         }
 
+        // 3. Update Index to fetch items
         public async Task<IActionResult> Index()
         {
-            // 3. Fetch all MenuItems AND their Categories
-            var menuItems = await _context.MenuItems.Include(m => m.Category).ToListAsync();
-            return View(menuItems);
+            // You MUST have .Include(m => m.Category) or the category names will be null!
+            var items = await _context.MenuItems
+                                      .Include(m => m.Category)
+                                      .ToListAsync();
+
+            return View(items);
         }
 
         public IActionResult Privacy()

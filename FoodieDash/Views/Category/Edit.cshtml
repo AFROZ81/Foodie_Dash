@@ -1,39 +1,151 @@
 ﻿@model FoodieDash.Models.Category
 
 @{
-    ViewData["Title"] = "Edit";
+    ViewData["Title"] = "Edit Category";
 }
 
-<h1>Edit</h1>
+<style>
+    /* === DASHBOARD THEME (Dark Variant) === */
+    .dashboard-header {
+        background: linear-gradient(135deg, #1e2024, #2d3436);
+        color: white;
+        padding: 40px 30px;
+        border-radius: 20px;
+        margin-bottom: -30px;
+        position: relative;
+        z-index: 1;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    }
 
-<h4>Category</h4>
-<hr />
-<div class="row">
-    <div class="col-md-4">
-        <form asp-action="Edit">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <input type="hidden" asp-for="Id" />
-            <div class="form-group">
-                <label asp-for="Name" class="control-label"></label>
-                <input asp-for="Name" class="form-control" />
-                <span asp-validation-for="Name" class="text-danger"></span>
+    .inventory-card {
+        border: none;
+        border-radius: 20px;
+        box-shadow: 0 15px 35px rgba(0,0,0,0.05);
+        background: white;
+        position: relative;
+        z-index: 2;
+        padding: 40px;
+    }
+
+    /* Form Inputs */
+    .form-label {
+        font-weight: 700;
+        color: #6c757d;
+        text-transform: uppercase;
+        font-size: 0.75rem;
+        letter-spacing: 0.5px;
+        margin-bottom: 8px;
+    }
+
+    .form-control {
+        border-radius: 10px;
+        padding: 12px 15px;
+        border: 2px solid #f0f0f0;
+        background-color: #fcfcfc;
+        transition: all 0.3s ease;
+        font-size: 0.95rem;
+    }
+
+        .form-control:focus {
+            border-color: #2d3436; /* Dark Grey */
+            box-shadow: 0 0 0 4px rgba(45, 52, 54, 0.2);
+            background-color: #fff;
+        }
+
+    /* Buttons */
+    .btn-save {
+        background: #2d3436; /* Dark Theme */
+        color: white;
+        padding: 12px 30px;
+        border-radius: 50px;
+        font-weight: 600;
+        border: none;
+        width: 100%;
+        transition: transform 0.2s;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    }
+
+        .btn-save:hover {
+            background: #000;
+            transform: translateY(-2px);
+            color: white;
+        }
+
+    .btn-back {
+        color: #6c757d;
+        font-weight: 600;
+        text-decoration: none;
+        font-size: 0.9rem;
+    }
+
+        .btn-back:hover {
+            color: #343a40;
+            text-decoration: underline;
+        }
+</style>
+
+<div class="container py-4">
+
+    <div class="dashboard-header d-flex justify-content-between align-items-center">
+        <div>
+            <h2 class="fw-bold mb-1">📂 Edit Category</h2>
+            <p class="mb-0 text-white-50">Update category name and sorting order</p>
+        </div>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="inventory-card">
+
+                <form asp-action="Edit" method="post">
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+                    <input type="hidden" asp-for="Id" />
+
+                    <div class="text-center mb-4">
+                        <div style="font-size: 3rem; background: #f8f9fa; width: 80px; height: 80px; line-height: 80px; border-radius: 50%; margin: 0 auto; color: #2d3436;">
+                            🏷️
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Name" class="form-label">Category Name</label>
+                        <input asp-for="Name" class="form-control" placeholder="e.g. Starters, Main Course" />
+                        <span asp-validation-for="Name" class="text-danger small"></span>
+                    </div>
+
+                    <div class="mb-4">
+                        <label asp-for="DisplayOrder" class="form-label">Display Order</label>
+
+                        <div class="row g-2 align-items-center">
+                            <div class="col-9">
+                                <input asp-for="DisplayOrder" class="form-control" placeholder="e.g. 1, 2, 3" />
+                            </div>
+                            <div class="col-3">
+                                <div class="text-center text-muted" style="font-size: 0.75rem; border: 1px solid #eee; padding: 10px; border-radius: 8px;">
+                                    Priority
+                                </div>
+                            </div>
+                        </div>
+                        <small class="text-muted mt-1 d-block">Lower numbers appear first in the menu.</small>
+                        <span asp-validation-for="DisplayOrder" class="text-danger small"></span>
+                    </div>
+
+                    <div class="d-grid gap-2 mb-3">
+                        <button type="submit" class="btn-save">Update Category</button>
+                    </div>
+
+                    <div class="text-center">
+                        <a asp-action="Index" class="btn-back">Cancel & Back to List</a>
+                    </div>
+                </form>
+
             </div>
-            <div class="form-group">
-                <label asp-for="DisplayOrder" class="control-label"></label>
-                <input asp-for="DisplayOrder" class="form-control" />
-                <span asp-validation-for="DisplayOrder" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <input type="submit" value="Save" class="btn btn-primary" />
-            </div>
-        </form>
+        </div>
     </div>
 </div>
 
-<div>
-    <a asp-action="Index">Back to List</a>
-</div>
-
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
 }

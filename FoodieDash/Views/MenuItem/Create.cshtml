@@ -1,51 +1,250 @@
 ﻿@model FoodieDash.Models.MenuItem
 
 @{
-    ViewData["Title"] = "Create";
+    ViewData["Title"] = "Add New Item";
 }
 
-<h1>Create</h1>
+<style>
+    /* === DASHBOARD THEME STYLES === */
+    .dashboard-header {
+        background: linear-gradient(135deg, #1e2024, #2d3436);
+        color: white;
+        padding: 40px 30px;
+        border-radius: 20px;
+        margin-bottom: -30px;
+        position: relative;
+        z-index: 1;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    }
 
-<h4>MenuItem</h4>
-<hr />
-<div class="row">
-    <div class="col-md-4">
-        <form asp-action="Create" enctype="multipart/form-data">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <div class="form-group">
-                <label asp-for="Name" class="control-label"></label>
-                <input asp-for="Name" class="form-control" />
-                <span asp-validation-for="Name" class="text-danger"></span>
+    .inventory-card {
+        border: none;
+        border-radius: 20px;
+        box-shadow: 0 15px 35px rgba(0,0,0,0.05);
+        background: white;
+        position: relative;
+        z-index: 2;
+        padding: 40px;
+    }
+
+    /* Form Styling */
+    .form-label {
+        font-weight: 700;
+        color: #6c757d;
+        text-transform: uppercase;
+        font-size: 0.75rem;
+        letter-spacing: 0.5px;
+        margin-bottom: 8px;
+    }
+
+    .form-control, .form-select {
+        border-radius: 10px;
+        padding: 12px 15px;
+        border: 2px solid #f0f0f0;
+        background-color: #fcfcfc;
+        transition: all 0.3s ease;
+        font-size: 0.95rem;
+    }
+
+        .form-control:focus, .form-select:focus {
+            border-color: #ff5e62;
+            box-shadow: 0 0 0 4px rgba(255, 94, 98, 0.1);
+            background-color: #fff;
+        }
+
+    /* Image Upload Box */
+    .image-upload-box {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        min-height: 250px;
+        border: 2px dashed #ddd;
+        border-radius: 15px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: #fafafa;
+        overflow: hidden;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+
+        .image-upload-box:hover {
+            border-color: #ff5e62;
+            background-color: #fff5f5;
+        }
+
+    .preview-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        position: absolute;
+        top: 0;
+        left: 0;
+        display: none; /* Hidden until file selected */
+    }
+
+    .upload-content {
+        text-align: center;
+        color: #aaa;
+    }
+
+    .upload-icon {
+        font-size: 3rem;
+        margin-bottom: 10px;
+        color: #ccc;
+    }
+
+    /* Buttons */
+    .btn-create {
+        background: #ff5e62;
+        color: white;
+        padding: 14px 30px;
+        border-radius: 50px;
+        font-weight: 600;
+        border: none;
+        width: 100%;
+        transition: transform 0.2s, box-shadow 0.2s;
+        box-shadow: 0 4px 15px rgba(255, 94, 98, 0.3);
+    }
+
+        .btn-create:hover {
+            background: #e04b4f;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 94, 98, 0.4);
+            color: white;
+        }
+
+    .btn-back {
+        color: #6c757d;
+        font-weight: 600;
+        text-decoration: none;
+        font-size: 0.9rem;
+    }
+
+        .btn-back:hover {
+            color: #343a40;
+            text-decoration: underline;
+        }
+</style>
+
+<div class="container py-4">
+
+    <div class="dashboard-header d-flex justify-content-between align-items-center">
+        <div>
+            <h2 class="fw-bold mb-1">🍽️ New Menu Item</h2>
+            <p class="mb-0 text-white-50">Create a new dish for your customers</p>
+        </div>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="inventory-card">
+
+                <form asp-action="Create" enctype="multipart/form-data" method="post">
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                    <div class="row g-5">
+
+                        <div class="col-md-4">
+                            <label class="form-label">Dish Image</label>
+
+                            <div class="image-upload-box" onclick="document.getElementById('fileInput').click();">
+                                <img id="imagePreview" class="preview-img" />
+                                <div class="upload-content" id="uploadPlaceholder">
+                                    <div class="upload-icon">📸</div>
+                                    <p class="mb-0 fw-bold">Click to Upload</p>
+                                    <small>JPG, PNG, WEBP</small>
+                                </div>
+                            </div>
+                            <input type="file" name="file" id="fileInput" class="d-none" accept="image/*" onchange="previewImage(this)" />
+                        </div>
+
+                        <div class="col-md-8">
+
+                            <div class="mb-3">
+                                <label asp-for="Name" class="form-label">Dish Name</label>
+                                <input asp-for="Name" class="form-control" placeholder="e.g. Paneer Butter Masala" />
+                                <span asp-validation-for="Name" class="text-danger small"></span>
+                            </div>
+
+                            <div class="mb-3">
+                                <label asp-for="Description" class="form-label">Description</label>
+                                <textarea asp-for="Description" class="form-control" rows="3" placeholder="Describe the ingredients and taste..."></textarea>
+                                <span asp-validation-for="Description" class="text-danger small"></span>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label asp-for="Price" class="form-label">Price (₹)</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-light border-end-0" style="border: 2px solid #f0f0f0; border-radius: 10px 0 0 10px;">₹</span>
+                                        <input asp-for="Price" class="form-control border-start-0" placeholder="0.00" style="border-radius: 0 10px 10px 0;" />
+                                    </div>
+                                    <span asp-validation-for="Price" class="text-danger small"></span>
+                                </div>
+
+                                <div class="col-md-6 mb-3">
+                                    <label asp-for="Type" class="form-label">Food Type</label>
+                                    <select asp-for="Type" class="form-select">
+                                        <option value="" disabled selected>-- Select Type --</option>
+                                        <option value="Veg">🟢 Veg</option>
+                                        <option value="Non-Veg">🔴 Non-Veg</option>
+                                    </select>
+                                    <span asp-validation-for="Type" class="text-danger small"></span>
+                                </div>
+                            </div>
+
+                            <div class="mb-4">
+                                <label asp-for="CategoryId" class="form-label">Category (Course)</label>
+                                <select asp-for="CategoryId" class="form-select" asp-items="ViewBag.CategoryId">
+                                    <option disabled selected>-- Select Category --</option>
+                                </select>
+                                <span asp-validation-for="CategoryId" class="text-danger small"></span>
+                            </div>
+
+                            <div class="d-grid gap-2 mb-3">
+                                <input type="submit" value="Add Item to Menu" class="btn-create" />
+                            </div>
+                            <div class="text-center">
+                                <a asp-action="Index" class="btn-back">Cancel & Back to List</a>
+                            </div>
+
+                        </div>
+                    </div>
+                </form>
+
             </div>
-            <div class="mb-3">
-                <label asp-for="Description" class="control-label"></label>
-                <textarea asp-for="Description" class="form-control" rows="3"></textarea>
-                <span asp-validation-for="Description" class="text-danger"></span>
-            </div>
-            <div class="mb-3">
-                <label class="control-label">Upload Image</label>
-                <input type="file" name="file" class="form-control" accept="image/*" />
-            </div>
-            <div class="form-group">
-                <label asp-for="Price" class="control-label"></label>
-                <input asp-for="Price" class="form-control" />
-                <span asp-validation-for="Price" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="CategoryId" class="control-label"></label>
-                <select asp-for="CategoryId" class ="form-control" asp-items="ViewBag.CategoryId"></select>
-            </div>
-            <div class="form-group">
-                <input type="submit" value="Create" class="btn btn-primary" />
-            </div>
-        </form>
+        </div>
     </div>
 </div>
 
-<div>
-    <a asp-action="Index">Back to List</a>
-</div>
-
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+    <script>
+        // Simple script to show the image immediately when selected
+        function previewImage(input) {
+            var preview = document.getElementById('imagePreview');
+            var placeholder = document.getElementById('uploadPlaceholder');
+
+            if (input.files && input.files[0]) {
+                var reader = new FileReader();
+
+                reader.onload = function (e) {
+                    preview.src = e.target.result;
+                    preview.style.display = 'block'; // Show image
+                    placeholder.style.display = 'none'; // Hide text
+                }
+
+                reader.readAsDataURL(input.files[0]);
+            } else {
+                preview.src = "";
+                preview.style.display = 'none';
+                placeholder.style.display = 'block';
+            }
+        }
+    </script>
 }

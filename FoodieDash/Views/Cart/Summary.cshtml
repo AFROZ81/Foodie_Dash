@@ -1,63 +1,246 @@
 ﻿@model List<FoodieDash.Models.CartItem>
 
 @{
-    ViewData["Title"] = "Order Summary";
-    // We now calculate total using Price * Quantity
-    double total = Model != null ? Model.Sum(i => i.MenuItem.Price * i.Quantity) : 0;
+    ViewData["Title"] = "Secure Checkout";
+    // Calculate total
+    double subtotal = Model != null ? Model.Sum(i => i.MenuItem.Price * i.Quantity) : 0;
+    // Assuming a standard 5% tax/fee
+    double tax = subtotal * 0.05;
+    double grandTotal = subtotal + tax;
 }
 
+<style>
+    body {
+        background-color: #f8f9fa;
+    }
+
+    /* Section Headers */
+    .section-title {
+        font-weight: 700;
+        color: #2d3436;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+    }
+
+    .section-number {
+        background: #2d3436;
+        color: white;
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 15px;
+        font-size: 0.9rem;
+    }
+
+    /* Input Fields */
+    .form-group-custom {
+        margin-bottom: 20px;
+        position: relative;
+    }
+
+    .form-control-custom {
+        height: 55px;
+        padding-left: 45px;
+        border-radius: 12px;
+        border: 2px solid #e9ecef;
+        font-weight: 500;
+        transition: all 0.3s;
+        background-color: white;
+    }
+
+        .form-control-custom:focus {
+            border-color: #00b894;
+            box-shadow: 0 0 0 4px rgba(0, 184, 148, 0.1);
+        }
+
+    .input-icon {
+        position: absolute;
+        left: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #b2bec3;
+        font-size: 1.2rem;
+        z-index: 5;
+    }
+
+    /* Order Summary Card (Receipt Style) */
+    .summary-card {
+        background: white;
+        border-radius: 20px;
+        padding: 30px;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.05);
+        border: 1px solid #f0f0f0;
+        position: sticky;
+        top: 20px;
+    }
+
+    .receipt-header {
+        border-bottom: 2px dashed #dfe6e9;
+        padding-bottom: 20px;
+        margin-bottom: 20px;
+        text-align: center;
+    }
+
+    .receipt-item {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 15px;
+        font-size: 0.95rem;
+        color: #636e72;
+    }
+
+    .receipt-item-name {
+        color: #2d3436;
+        font-weight: 600;
+    }
+
+    .receipt-total-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 20px;
+        padding-top: 20px;
+        border-top: 2px solid #2d3436;
+    }
+
+    /* Button */
+    .btn-place-order {
+        background: #00b894;
+        color: white;
+        font-weight: 700;
+        padding: 18px;
+        border-radius: 15px;
+        width: 100%;
+        border: none;
+        font-size: 1.1rem;
+        letter-spacing: 0.5px;
+        box-shadow: 0 10px 20px rgba(0, 184, 148, 0.2);
+        transition: all 0.2s;
+        margin-top: 25px;
+    }
+
+        .btn-place-order:hover {
+            background: #00a884;
+            transform: translateY(-2px);
+            box-shadow: 0 15px 30px rgba(0, 184, 148, 0.3);
+        }
+</style>
+
 <form method="post" asp-action="PlaceOrder">
-    <div class="container p-3">
-        <div class="card shadow border-0 mt-4">
-            <div class="card-header bg-success bg-gradient ml-0 py-3">
-                <div class="row">
-                    <div class="col-12 text-center">
-                        <h5 class="text-white py-2">Confirm Your Order</h5>
+    <div class="container py-5">
+
+        <div class="row g-5">
+
+            <div class="col-lg-7">
+                <div class="mb-5">
+                    <h2 class="fw-bold">Checkout</h2>
+                    <p class="text-muted">Enter your delivery information to complete the order.</p>
+                </div>
+
+                <h5 class="section-title"><span class="section-number">1</span> Delivery Details</h5>
+
+                <div class="card border-0 shadow-sm p-4 mb-4 rounded-4 bg-white">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <label class="fw-bold text-muted small mb-1 ms-1">FULL NAME</label>
+                            <div class="form-group-custom">
+                                <i class="bi bi-person input-icon"></i>
+                                <input name="PickupName" class="form-control form-control-custom" placeholder="e.g. Rahul Sharma" required />
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="fw-bold text-muted small mb-1 ms-1">PHONE NUMBER</label>
+                            <div class="form-group-custom">
+                                <i class="bi bi-telephone input-icon"></i>
+                                <input name="PhoneNumber" class="form-control form-control-custom" placeholder="+91 XXXXX XXXXX" required />
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="fw-bold text-muted small mb-1 ms-1">DELIVERY ADDRESS</label>
+                            <div class="form-group-custom">
+                                <i class="bi bi-geo-alt-fill input-icon"></i>
+                                <input name="Address" type="text" class="form-control form-control-custom" placeholder="Flat No, Area, City..." required />
+                            </div>
+                        </div>
                     </div>
                 </div>
+
+                <h5 class="section-title"><span class="section-number">2</span> Payment Method</h5>
+                <div class="card border-0 shadow-sm p-4 rounded-4 bg-white">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="paymentType" id="payCard" checked>
+                            <label class="form-check-label fw-bold" for="payCard">
+                                Credit / Debit Card
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="paymentType" id="payCash">
+                            <label class="form-check-label fw-bold" for="payCash">
+                                Cash on Delivery
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
             </div>
-            <div class="card-body p-4">
-                <div class="row">                   
-                    <div class="col-md-6">
-                        <h4 class="text-primary">Pickup Details</h4>
-                        <div class="mb-3">
-                            <label>Name</label>
-                            <input name="PickupName" class="form-control" required />
+
+            <div class="col-lg-5">
+                <div class="summary-card">
+                    <div class="receipt-header">
+                        <h4 class="fw-bold mb-1">Order Summary</h4>
+                        <small class="text-muted">FoodieDash Official Receipt</small>
+                    </div>
+
+                    <div class="mb-4">
+                        @foreach (var item in Model)
+                        {
+                            <div class="receipt-item">
+                                <div>
+                                    <span class="badge bg-light text-dark border me-2">x @item.Quantity</span>
+                                    <span class="receipt-item-name">@item.MenuItem?.Name</span>
+                                </div>
+                                <span class="fw-bold">₹@(item.MenuItem?.Price * item.Quantity)</span>
+                            </div>
+                        }
+                    </div>
+
+                    <div class="pt-3 border-top border-light">
+                        <div class="d-flex justify-content-between mb-2 text-muted">
+                            <span>Subtotal</span>
+                            <span>₹@subtotal</span>
                         </div>
-                        <div class="mb-3">
-                            <label>Phone</label>
-                            <input name="PhoneNumber" class="form-control" required />
-                        </div>
-                        <div class="mb-3">
-                            <label>Email</label>
-                            <input name="Email" type="email" class="form-control" required />
+                        <div class="d-flex justify-content-between mb-2 text-muted">
+                            <span>Service Fee (5%)</span>
+                            <span>₹@tax</span>
                         </div>
                     </div>
 
-                    <div class="col-md-6">
-                        <h4 class="text-primary">Order Items</h4>
-                        <ul class="list-group mb-3">
-                            @foreach (var item in Model)
-                            {
-                                <li class="list-group-item d-flex justify-content-between">
-                                    <div>
-                                        <h6 class="my-0">@item.MenuItem?.Name</h6>
-                                        <small class="text-muted">Quantity: @item.Quantity</small>
-                                    </div>
-                                    <span class="text-muted">₹@(item.MenuItem?.Price* item.Quantity)</span>
-                                </li>
-                            }
-                            <li class="list-group-item d-flex justify-content-between bg-light">
-                                <span class="fw-bold">TOTAL</span>
-                                <strong class="text-success">₹@total</strong>
-                            </li>
-                        </ul>
+                    <div class="receipt-total-row">
+                        <div>
+                            <span class="d-block fw-bold fs-5">Total to Pay</span>
+                            <small class="text-muted">Inclusive of all taxes</small>
+                        </div>
+                        <div class="fs-2 fw-bold text-dark">₹@grandTotal</div>
                     </div>
+
+                    <button type="submit" class="btn-place-order">
+                        Confirm Order <i class="bi bi-bag-check-fill ms-2"></i>
+                    </button>
+
+                    <div class="text-center mt-3">
+                        <small class="text-muted"><i class="bi bi-shield-lock-fill text-success"></i> 100% Secure Checkout</small>
+                    </div>
+
                 </div>
             </div>
-            <div class="card-footer">
-                <button type="submit" class="btn btn-success form-control">Place Order</button>
-            </div>
+
         </div>
     </div>
 </form>

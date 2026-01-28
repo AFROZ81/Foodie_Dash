@@ -42,7 +42,7 @@ namespace FoodieDash.Controllers
             }
 
             HttpContext.Session.SetObject("MyCart", cart);
-            return RedirectToAction("Index"); // Go straight to cart to see the update
+            return RedirectToAction("Index");
         }
 
         public IActionResult Minus(int id)
@@ -91,7 +91,8 @@ namespace FoodieDash.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> PlaceOrder(string PickupName, string PhoneNumber, string Email)
+        // UPDATED: Now accepts 'Address' and 'paymentType' from the form
+        public async Task<IActionResult> PlaceOrder(string PickupName, string PhoneNumber, string Address, string paymentType)
         {
             List<CartItem> cart = HttpContext.Session.GetObject<List<CartItem>>("MyCart") ?? new List<CartItem>();
 
@@ -102,9 +103,13 @@ namespace FoodieDash.Controllers
                 {
                     PickupName = PickupName,
                     PhoneNumber = PhoneNumber,
-                    Email = Email,
+                    // UPDATED: Mapping the Address field
+                    // Make sure your OrderHeader Model has an 'Address' property!
+                    Address = Address,
+                    // Optional: You can store the payment type if you added a property for it
+                    // PaymentStatus = paymentType, 
                     OrderDate = DateTime.Now,
-                    OrderTotal = cart.Sum(x => x.MenuItem.Price * x.Quantity) // Calculate Total with Qty
+                    OrderTotal = cart.Sum(x => x.MenuItem.Price * x.Quantity)
                 };
 
                 _context.OrderHeaders.Add(orderHeader);
@@ -119,7 +124,7 @@ namespace FoodieDash.Controllers
                         MenuItemId = item.MenuItem.Id,
                         Name = item.MenuItem.Name,
                         Price = item.MenuItem.Price,
-                        Count = item.Quantity // Save the Quantity!
+                        Count = item.Quantity
                     };
                     _context.OrderDetails.Add(orderDetail);
                 }

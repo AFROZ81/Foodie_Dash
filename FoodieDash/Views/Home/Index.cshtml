@@ -1,44 +1,274 @@
 ﻿@model IEnumerable<FoodieDash.Models.MenuItem>
 
 @{
-    ViewData["Title"] = "Menu";
+    ViewData["Title"] = "Our Menu";
+
+    // 1. Get all unique categories safely (ignoring nulls)
+    var categories = Model
+        .Select(m => m.Category?.Name)
+        .Where(c => !string.IsNullOrEmpty(c))
+        .Distinct()
+        .OrderBy(c => c)
+        .ToList();
 }
 
-<div class="container my-4">
-    <div class="text-center p-5 bg-dark text-white rounded mb-5"
-         style="background-image: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=1200&q=80'); background-size: cover; background-position: center;">
-        <h1 class="display-4 fw-bold">Welcome to FoodieDash</h1>
-        <p class="lead">Fresh food delivered to your doorstep in minutes.</p>
-    </div>
+<style>
+    /* === HERO HEADER === */
+    .hero-header {
+        background: linear-gradient(135deg, #ff9966, #ff5e62);
+        color: white;
+        padding: 40px 20px; /* Reduced slightly to save space */
+        text-align: center;
+        border-radius: 0 0 30px 30px;
+        margin-bottom: 20px;
+        box-shadow: 0 10px 20px rgba(255, 94, 98, 0.2);
+    }
 
+    /* === SIDEBAR STYLES (Fixed Alignment) === */
+    .sidebar-sticky {
+        position: sticky;
+        top: 20px; /* Distance from top of browser window */
+        z-index: 1000;
+        height: calc(100vh - 40px);
+        overflow-y: auto;
+        /* ALIGNMENT FIX: This pushes the Category buttons down
+               to align with the Food Items (skipping the Filter Bar height) */
+        padding-top: 85px;
+    }
+
+        /* Scrollbar styling for sidebar */
+        .sidebar-sticky::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .sidebar-sticky::-webkit-scrollbar-thumb {
+            background-color: #ddd;
+            border-radius: 10px;
+        }
+
+    .cat-btn {
+        width: 100%;
+        text-align: left;
+        padding: 12px 20px;
+        margin-bottom: 8px;
+        border-radius: 12px;
+        border: 1px solid #f0f0f0;
+        background: white;
+        color: #555;
+        font-weight: 600;
+        transition: all 0.2s ease;
+        cursor: pointer;
+    }
+
+        .cat-btn:hover {
+            background: #fff0ed;
+            color: #ff5e62;
+        }
+
+        .cat-btn.active {
+            background: #ff5e62;
+            color: white;
+            border-color: #ff5e62;
+            box-shadow: 0 4px 10px rgba(255, 94, 98, 0.4);
+        }
+
+    /* === FILTER BAR STYLES === */
+    .filter-bar-sticky {
+        position: sticky;
+        top: 0;
+        z-index: 900;
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(5px);
+        padding: 15px;
+        border-radius: 0 0 15px 15px;
+        margin-bottom: 20px;
+        border-bottom: 1px solid #eee;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+    }
+
+    /* === FOOD CARD STYLES === */
+    .food-card {
+        border: none;
+        border-radius: 20px;
+        overflow: hidden;
+        background: white;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        height: 100%;
+    }
+
+        .food-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+        }
+
+    .food-img {
+        height: 180px;
+        width: 100%;
+        object-fit: cover;
+    }
+</style>
+
+<div class="hero-header">
+    <h1 class="fw-bold">Hungry?</h1>
+    <p class="lead mb-0">Order your favorites now!</p>
+</div>
+
+<div class="container-fluid px-4">
     <div class="row">
-        @foreach (var item in Model)
-        {
-            <div class="col-md-4 col-sm-6 mb-4">
-                <div class="card h-100 shadow-sm border-0">
-                    <img src="@item.ImageUrl" class="card-img-top" alt="@item.Name"
-                         style="height: 250px; object-fit: cover;">
 
-                    <div class="card-body d-flex flex-column">
-                        <div class="d-flex justify-content-between align-items-center mb-2">
-                            <h5 class="card-title fw-bold text-dark mb-0">@item.Name</h5>
-                            <span class="badge bg-success">@(item.Category?.Name ?? "No Category")</span>
-                        </div>
+        <div class="col-lg-2 d-none d-lg-block">
+            <div class="sidebar-sticky">
+                <h6 class="text-uppercase text-muted fw-bold mb-3 small ps-2">Menu Categories</h6>
 
-                        <p class="card-text text-muted small flex-grow-1">
-                            @item.Description
-                        </p>
+                <button class="cat-btn active" onclick="setCategory('all', this)">
+                    🍽️ All Menu
+                </button>
 
-                        <div class="d-flex justify-content-between align-items-center mt-3">
-                            <h5 class="text-primary fw-bold mb-0">₹@item.Price</h5>
-                            <a asp-controller="Cart" asp-action="Add" asp-route-id="@item.Id"
-                               class="btn btn-outline-danger btn-sm rounded-pill px-3">
-                                <i class="bi bi-cart-plus"></i> Add to Cart
-                            </a>
-                        </div>
-                    </div>
+                @foreach (var cat in categories)
+                {
+                    <button class="cat-btn" onclick="setCategory('@cat', this)">
+                        @cat
+                    </button>
+                }
+            </div>
+        </div>
+
+        <div class="col-lg-10">
+
+            <div class="filter-bar-sticky d-flex flex-wrap justify-content-between align-items-center">
+
+                <div class="d-lg-none flex-grow-1 me-3">
+                    <select class="form-select rounded-pill" onchange="setCategory(this.value, null)">
+                        <option value="all">Show All Categories</option>
+                        @foreach (var cat in categories)
+                        {
+                            <option value="@cat">@cat</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="btn-group shadow-sm rounded-pill" role="group">
+                    <input type="radio" class="btn-check" name="typeFilter" id="typeAll" autocomplete="off" checked onclick="setType('all')">
+                    <label class="btn btn-outline-secondary px-4 rounded-start-pill" for="typeAll">All</label>
+
+                    <input type="radio" class="btn-check" name="typeFilter" id="typeVeg" autocomplete="off" onclick="setType('Veg')">
+                    <label class="btn btn-outline-success px-4" for="typeVeg">Veg</label>
+
+                    <input type="radio" class="btn-check" name="typeFilter" id="typeNonVeg" autocomplete="off" onclick="setType('Non-Veg')">
+                    <label class="btn btn-outline-danger px-4 rounded-end-pill" for="typeNonVeg">Non-Veg</label>
                 </div>
             </div>
-        }
+
+            <div class="row g-4" id="foodContainer">
+                @foreach (var item in Model)
+                {
+                    var itemCatName = item.Category?.Name ?? "Uncategorized";
+                    // Handle null types safely for the filter logic
+                    var itemType = item.Type ?? "Other";
+
+                    <div class="col-md-6 col-lg-4 col-xl-3 food-item-card"
+                         data-category="@itemCatName"
+                         data-type="@itemType">
+
+                        <div class="food-card d-flex flex-column position-relative">
+
+                            @if (!string.IsNullOrEmpty(item.Type))
+                            {
+                                <span class="position-absolute top-0 end-0 m-3 badge rounded-pill shadow-sm @(item.Type == "Veg" ? "bg-success" : "bg-danger")">
+                                    @item.Type
+                                </span>
+                            }
+
+                            <img src="@item.ImageUrl" class="food-img" alt="@item.Name"
+                                 onerror="this.src='https://placehold.co/600x400?text=No+Image'">
+
+                            <div class="card-body d-flex flex-column">
+                                <div class="mb-2">
+                                    <h5 class="fw-bold mb-1 text-dark">@item.Name</h5>
+                                    <small class="text-muted fw-bold">@itemCatName</small>
+                                </div>
+                                <p class="text-secondary small flex-grow-1" style="min-height: 40px;">
+                                    @item.Description
+                                </p>
+
+                                <div class="d-flex justify-content-between align-items-center mt-3 pt-3 border-top">
+                                    <h5 class="fw-bold mb-0 text-primary">₹@item.Price</h5>
+                                    <a asp-controller="Cart" asp-action="Add" asp-route-id="@item.Id"
+                                       class="btn btn-sm btn-danger rounded-pill px-4 fw-bold shadow-sm">
+                                        ADD +
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+
+            <div id="empty-msg" class="text-center mt-5 py-5" style="display:none;">
+                <div class="display-1 text-muted opacity-25 mb-3">🍽️</div>
+                <h4 class="text-muted fw-normal">No items match your selection.</h4>
+                <button class="btn btn-outline-primary mt-3 rounded-pill" onclick="resetFilters()">Clear Filters</button>
+            </div>
+
+        </div>
     </div>
 </div>
+
+<script>
+    let currentCategory = 'all';
+    let currentType = 'all';
+
+    function setCategory(category, btn) {
+        currentCategory = category;
+
+        // Update Sidebar Active State
+        if (btn) {
+            document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+        }
+        applyFilters();
+    }
+
+    function setType(type) {
+        currentType = type;
+        applyFilters();
+    }
+
+    function resetFilters() {
+        // Reset Logic
+        setCategory('all', document.querySelector('.cat-btn')); // Select first button
+        setType('all');
+        document.getElementById('typeAll').checked = true;
+    }
+
+    function applyFilters() {
+        let items = document.querySelectorAll('.food-item-card');
+        let count = 0;
+
+        items.forEach(item => {
+            let itemCat = item.getAttribute('data-category');
+            let itemType = item.getAttribute('data-type');
+
+            // 1. Check Category Match
+            let catMatch = (currentCategory === 'all' || itemCat === currentCategory);
+
+            // 2. Check Type Match (Robust)
+            let typeMatch = (currentType === 'all' || itemType === currentType);
+
+            if (catMatch && typeMatch) {
+                item.classList.remove('d-none'); // Show
+                item.classList.add('animate__animated', 'animate__fadeIn'); // Optional: Add animation class if using Animate.css
+                count++;
+            } else {
+                item.classList.add('d-none'); // Hide
+            }
+        });
+
+        // Toggle Empty State
+        let emptyMsg = document.getElementById('empty-msg');
+        if(emptyMsg) {
+             emptyMsg.style.display = (count === 0) ? 'block' : 'none';
+        }
+    }
+</script>

@@ -1,59 +1,277 @@
 ﻿@model IEnumerable<FoodieDash.Models.MenuItem>
 
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "Menu Inventory";
 }
 
-<h1>Index</h1>
+<style>
+    /* === DASHBOARD STYLES === */
+    .dashboard-header {
+        background: linear-gradient(135deg, #1e2024, #2d3436);
+        color: white;
+        padding: 40px 30px;
+        border-radius: 20px;
+        margin-bottom: -30px;
+        position: relative;
+        z-index: 1;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    }
 
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
-<table class="table">
-    <thead>
-        <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.Name)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Description)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.ImageUrl)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Price)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Category)
-            </th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.Name)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Description)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.ImageUrl)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Price)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Category.Name)
-            </td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
-            </td>
-        </tr>
-}
-    </tbody>
-</table>
+    .inventory-card {
+        border: none;
+        border-radius: 20px;
+        box-shadow: 0 15px 35px rgba(0,0,0,0.05);
+        overflow: hidden;
+        background: white;
+        position: relative;
+        z-index: 2;
+    }
+
+    /* Table Styling */
+    .table-custom thead th {
+        background-color: #f8f9fa;
+        color: #6c757d;
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.85rem;
+        letter-spacing: 0.5px;
+        padding: 15px 20px;
+        border-bottom: 2px solid #eee;
+    }
+
+    .table-custom tbody td {
+        padding: 15px 20px;
+        vertical-align: middle;
+        color: #495057;
+        font-weight: 500;
+        border-bottom: 1px solid #f2f2f2;
+    }
+
+    .table-custom tbody tr:hover {
+        background-color: #fffcfb;
+    }
+
+    /* Item Specifics */
+    .item-thumbnail {
+        width: 60px;
+        height: 60px;
+        object-fit: cover;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+
+    .price-tag {
+        font-family: 'Courier New', monospace;
+        font-weight: 700;
+        color: #2d3436;
+        font-size: 1.1rem;
+    }
+
+    .category-badge {
+        background-color: #e3f2fd;
+        color: #1976d2;
+        padding: 5px 12px;
+        border-radius: 6px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+
+    .veg-badge {
+        color: #2e7d32;
+        border: 1px solid #2e7d32;
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-size: 0.7rem;
+    }
+
+    .nonveg-badge {
+        color: #c62828;
+        border: 1px solid #c62828;
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-size: 0.7rem;
+    }
+
+    /* Buttons */
+    .btn-action {
+        width: 35px;
+        height: 35px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 8px;
+        transition: all 0.2s;
+        margin-right: 5px;
+        color: #fff;
+        border: none;
+        text-decoration: none;
+    }
+
+        .btn-action:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 10px rgba(0,0,0,0.1);
+            color: white;
+        }
+
+    .btn-edit {
+        background-color: #ffca28;
+    }
+
+    .btn-delete {
+        background-color: #ff5e62;
+    }
+
+    .btn-add-new {
+        background: #ff5e62;
+        color: white;
+        padding: 12px 25px;
+        border-radius: 50px;
+        font-weight: 600;
+        box-shadow: 0 4px 15px rgba(255, 94, 98, 0.4);
+        border: none;
+        transition: transform 0.2s;
+        text-decoration: none;
+    }
+
+        .btn-add-new:hover {
+            background: #e04b4f;
+            transform: translateY(-2px);
+            color: white;
+        }
+</style>
+
+<div class="container py-4">
+
+    <div class="dashboard-header d-flex justify-content-between align-items-center">
+        <div>
+            <h2 class="fw-bold mb-1">🍔 Menu Items</h2>
+            <p class="mb-0 text-white-50">Manage your food items, prices, and images</p>
+        </div>
+        <div class="text-end d-none d-md-block">
+            <h2 class="fw-bold mb-0">@Model.Count()</h2>
+            <small class="text-white-50 text-uppercase">Total Items</small>
+        </div>
+    </div>
+
+    <div class="row justify-content-center px-3">
+        <div class="col-12 inventory-card p-0">
+
+            <div class="d-flex justify-content-between align-items-center p-4 border-bottom">
+                <div class="d-flex align-items-center">
+                    <span class="badge bg-light text-dark border me-2">Filter</span>
+                    <input type="text" id="searchInput" class="form-control form-control-sm border-0 bg-light rounded-pill px-3"
+                           placeholder="Search items or categories..." style="width: 250px;">
+                </div>
+
+                <a asp-controller="MenuItem" asp-action="Create" class="btn-add-new">
+                    + Add Menu Item
+                </a>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-custom mb-0">
+                    <thead>
+                        <tr>
+                            <th scope="col" width="10%">Image</th>
+                            <th scope="col" width="35%">Item Details</th>
+                            <th scope="col" width="15%">Category</th>
+                            <th scope="col" width="15%">Price</th>
+                            <th scope="col" width="25%" class="text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="menuTable">
+                        @if (Model.Any())
+                        {
+                            @foreach (var item in Model)
+                            {
+                                <tr class="menu-row">
+                                    <td>
+                                        <img src="@item.ImageUrl" alt="@item.Name" class="item-thumbnail"
+                                             onerror="this.onerror=null;this.src='https://via.placeholder.com/60?text=No+Img';" />
+                                    </td>
+
+                                    <td class="item-name-col">
+                                        <div class="d-flex align-items-center mb-1">
+                                            <h6 class="mb-0 fw-bold text-dark me-2">@item.Name</h6>
+                                            @* Assuming you might have a property for Veg/NonVeg later, 
+                                               removed for now to match your model, but simple to add back *@
+                                        </div>
+                                        <small class="text-muted d-block text-truncate" style="max-width: 250px;">
+                                            @item.Description
+                                        </small>
+                                    </td>
+
+                                    <td class="item-category-col">
+                                        <span class="category-badge">
+                                            @item.Category.Name
+                                        </span>
+                                    </td>
+
+                                    <td>
+                                        <span class="price-tag">₹@item.Price</span>
+                                    </td>
+
+                                    <td class="text-end">
+                                        <a asp-action="Edit" asp-route-id="@item.Id" class="btn-action btn-edit" title="Edit">
+                                            ✏️
+                                        </a>
+                                        <a asp-action="Details" asp-route-id="@item.Id" class="btn-action" style="background-color:#4fc3f7;" title="Details">
+                                            ℹ️
+                                        </a>
+                                        <a asp-action="Delete" asp-route-id="@item.Id" class="btn-action btn-delete" title="Delete">
+                                            🗑️
+                                        </a>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="5" class="text-center py-5">
+                                    <div class="text-muted opacity-50">
+                                        <h1 class="display-4">🍽️</h1>
+                                        <p>No menu items found.</p>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+
+                        <tr id="noResultsRow" style="display:none;">
+                            <td colspan="5" class="text-center py-4 text-muted">
+                                🔍 No menu items match your search.
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.getElementById('searchInput').addEventListener('keyup', function() {
+        let searchValue = this.value.toLowerCase();
+        let tableRows = document.querySelectorAll('.menu-row');
+        let hasVisibleRows = false;
+
+        tableRows.forEach(row => {
+            let itemName = row.querySelector('.item-name-col h6').textContent.toLowerCase();
+            let categoryName = row.querySelector('.item-category-col span').textContent.toLowerCase();
+
+            // Search in both Name AND Category
+            if (itemName.includes(searchValue) || categoryName.includes(searchValue)) {
+                row.style.display = '';
+                hasVisibleRows = true;
+            } else {
+                row.style.display = 'none';
+            }
+        });
+
+        let noResultsRow = document.getElementById('noResultsRow');
+        if (noResultsRow) {
+            noResultsRow.style.display = hasVisibleRows ? 'none' : 'table-row';
+        }
+    });
+</script>

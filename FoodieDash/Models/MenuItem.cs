@@ -12,15 +12,16 @@ namespace FoodieDash.Models
         public string Name { get; set; } = "";
         public string? Description { get; set; }
         public string? ImageUrl { get; set; } // We will store the link to the image
+
+        [Range(1, 2000)]
         public double Price { get; set; }
 
-        // --- RELATIONS (The New Part) ---
+        [Display(Name = "Veg / Non-Veg")]
+        public string? Type { get; set; }
 
-        // This is the Foreign Key (links to Category table)
-        [Display(Name = "Category")]
-        public int CategoryId { get; set; }
-
-        // This is the Navigation Property (allows us to grab the Category name easily)
+        [Display(Name = "Menu Course")]
+        public string? Course { get; set; }
+        public int? CategoryId { get; set; }
         [ForeignKey("CategoryId")]
         public virtual Category? Category { get; set; }
     }

@@ -1,84 +1,261 @@
 ﻿@model List<FoodieDash.Models.CartItem>
 
 @{
-    ViewData["Title"] = "Shopping Cart";
+    ViewData["Title"] = "Your Bag";
     double grandTotal = Model.Sum(item => item.MenuItem.Price * item.Quantity);
 }
 
-<div class="container p-3">
-    <div class="card shadow border-0 mt-4">
-        <div class="card-header bg-danger bg-gradient ml-0 py-3">
-            <h5 class="text-white text-center py-2">Shopping Cart</h5>
-        </div>
-        <div class="card-body p-4">
-            @if (Model.Count() > 0)
-            {
-                <table class="table table-bordered table-striped">
-                    <thead class="bg-light">
-                        <tr>
-                            <th>Product</th>
-                            <th class="text-center">Price</th>
-                            <th class="text-center">Quantity</th>
-                            <th class="text-center">Total</th>
-                            <th></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var item in Model)
-                        {
-                            <tr>
-                                <td class="align-middle fw-bold">
-                                    <img src="@item.MenuItem?.ImageUrl" width="50" class="rounded me-2" />
-                                    @item.MenuItem?.Name
-                                </td>
-                                <td class="align-middle text-center">₹@item.MenuItem?.Price</td>
-                                <td class="align-middle text-center">
-                                    <div class="btn-group" role="group">
-                                        <a asp-action="Minus" asp-route-id="@item.MenuItem?.Id" class="btn btn-outline-secondary btn-sm">-</a>
-                                        <span class="btn btn-light btn-sm disabled text-dark" style="width: 40px;">@item.Quantity</span>
-                                        <a asp-action="Add" asp-route-id="@item.MenuItem?.Id" class="btn btn-outline-secondary btn-sm">+</a>
-                                    </div>
-                                </td>
-                                <td class="align-middle text-center">
-                                    ₹@(item.MenuItem?.Price* item.Quantity)
-                                </td>
-                                <td class="align-middle text-center">
-                                    <a asp-action="Remove" asp-route-id="@item.MenuItem?.Id" class="btn btn-danger btn-sm">
-                                        <i class="bi bi-trash"></i>
-                                    </a>
-                                </td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
+<style>
+    body {
+        background-color: #f8f9fa;
+    }
 
-                <div class="row">
-                    <div class="col-6 col-md-3 offset-md-9">
-                        <ul class="list-group">
-                            <li class="list-group-item d-flex justify-content-between align-items-center bg-light">
-                                <span class="fw-bold">Grand Total</span>
-                                <strong class="text-primary">₹@grandTotal</strong>
-                            </li>
-                        </ul>
-                    </div>
-                </div>
+    /* Card Styling */
+    .cart-container {
+        max-width: 1100px;
+        margin: auto;
+    }
 
-                <div class="row mt-3">
-                    <div class="col-6">
-                        <a asp-controller="Home" asp-action="Index" class="btn btn-outline-secondary w-100">Continue Shopping</a>
-                    </div>
-                    <div class="col-6 text-end">
-                        <a asp-action="Summary" class="btn btn-success w-100">Proceed to Checkout</a>
-                    </div>
-                </div>
-            }
-            else
-            {
-                <div class="text-center p-5">
-                    <h3>Cart is Empty</h3>
-                    <a asp-controller="Home" asp-action="Index" class="btn btn-primary mt-3">Go to Menu</a>
-                </div>
-            }
+    .cart-item-card {
+        background: white;
+        border-radius: 15px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.03);
+        transition: transform 0.2s;
+        border: 1px solid #f0f0f0;
+    }
+
+        .cart-item-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.06);
+        }
+
+    /* Image Styling */
+    .cart-img-wrapper {
+        width: 100px;
+        height: 100px;
+        border-radius: 12px;
+        overflow: hidden;
+        flex-shrink: 0;
+    }
+
+    .cart-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    /* Typography */
+    .item-name {
+        font-weight: 700;
+        font-size: 1.1rem;
+        color: #2d3436;
+        margin-bottom: 4px;
+    }
+
+    .item-price {
+        color: #636e72;
+        font-size: 0.95rem;
+    }
+
+    .item-total {
+        font-weight: 700;
+        color: #2d3436;
+        font-size: 1.1rem;
+    }
+
+    /* Quantity Controls */
+    .qty-control {
+        display: inline-flex;
+        align-items: center;
+        background: #f1f2f6;
+        border-radius: 50px;
+        padding: 5px;
+    }
+
+    .qty-btn {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        border: none;
+        background: white;
+        color: #2d3436;
+        font-weight: bold;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-decoration: none;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        transition: all 0.2s;
+    }
+
+        .qty-btn:hover {
+            background: #ff7675;
+            color: white;
+        }
+
+    .qty-val {
+        width: 40px;
+        text-align: center;
+        font-weight: 600;
+        color: #2d3436;
+    }
+
+    /* Order Summary Card */
+    .summary-card {
+        background: white;
+        border-radius: 20px;
+        padding: 30px;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.05);
+        position: sticky;
+        top: 20px;
+    }
+
+    .checkout-btn {
+        background: linear-gradient(135deg, #00b894, #00cec9);
+        color: white;
+        font-weight: 700;
+        padding: 15px;
+        border-radius: 12px;
+        width: 100%;
+        border: none;
+        letter-spacing: 0.5px;
+        box-shadow: 0 5px 15px rgba(0, 184, 148, 0.3);
+        transition: all 0.2s;
+        text-decoration: none;
+        display: block;
+        text-align: center;
+    }
+
+        .checkout-btn:hover {
+            transform: translateY(-2px);
+            color: white;
+            box-shadow: 0 8px 20px rgba(0, 184, 148, 0.4);
+        }
+
+    .btn-remove {
+        color: #ff7675;
+        background: rgba(255, 118, 117, 0.1);
+        width: 35px;
+        height: 35px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        text-decoration: none;
+        transition: all 0.2s;
+    }
+
+        .btn-remove:hover {
+            background: #ff7675;
+            color: white;
+        }
+
+    /* Empty State */
+    .empty-cart-icon {
+        font-size: 5rem;
+        color: #dfe6e9;
+        margin-bottom: 20px;
+    }
+</style>
+
+<div class="container py-5 cart-container">
+
+    @if (Model.Any())
+    {
+        <div class="d-flex align-items-center mb-4">
+            <h2 class="fw-bold mb-0">🛒 Your Order</h2>
+            <span class="badge bg-dark ms-3 rounded-pill">@Model.Count items</span>
         </div>
-    </div>
+
+        <div class="row g-5">
+            <div class="col-lg-8">
+                @foreach (var item in Model)
+                {
+                    <div class="cart-item-card d-flex align-items-center gap-4">
+                        <div class="cart-img-wrapper">
+                            <img src="@item.MenuItem?.ImageUrl" class="cart-img"
+                                 onerror="this.src='https://placehold.co/150?text=Food';" alt="@item.MenuItem?.Name" />
+                        </div>
+
+                        <div class="flex-grow-1">
+                            <h5 class="item-name">@item.MenuItem?.Name</h5>
+                            <div class="item-price">₹@item.MenuItem?.Price per item</div>
+                        </div>
+
+                        <div class="d-flex flex-column align-items-center gap-2">
+                            <div class="qty-control">
+                                <a asp-action="Minus" asp-route-id="@item.MenuItem?.Id" class="qty-btn">-</a>
+                                <span class="qty-val">@item.Quantity</span>
+                                <a asp-action="Add" asp-route-id="@item.MenuItem?.Id" class="qty-btn">+</a>
+                            </div>
+                        </div>
+
+                        <div class="text-end" style="min-width: 80px;">
+                            <div class="item-total mb-2">₹@(item.MenuItem?.Price * item.Quantity)</div>
+                            <div class="d-flex justify-content-end">
+                                <a asp-action="Remove" asp-route-id="@item.MenuItem?.Id" class="btn-remove" title="Remove Item">
+                                    <i class="bi bi-trash"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                }
+
+                <div class="mt-4">
+                    <a asp-controller="Home" asp-action="Index" class="text-muted fw-bold text-decoration-none">
+                        <i class="bi bi-arrow-left me-2"></i> Continue Shopping
+                    </a>
+                </div>
+            </div>
+
+            <div class="col-lg-4">
+                <div class="summary-card">
+                    <h4 class="fw-bold mb-4">Order Summary</h4>
+
+                    <div class="d-flex justify-content-between mb-3 text-muted">
+                        <span>Subtotal</span>
+                        <span>₹@grandTotal</span>
+                    </div>
+
+                    <div class="d-flex justify-content-between mb-3 text-muted">
+                        <span>Taxes & Fees (5%)</span>
+                        <span>₹@(grandTotal * 0.05)</span>
+                    </div>
+
+                    <div class="d-flex justify-content-between mb-3 text-muted">
+                        <span>Delivery</span>
+                        <span class="text-success">Free</span>
+                    </div>
+
+                    <hr class="my-4" style="opacity: 0.1">
+
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <span class="fw-bold fs-5">Total</span>
+                        <span class="fw-bolder fs-3 text-dark">₹@(grandTotal + (grandTotal * 0.05))</span>
+                    </div>
+
+                    <a asp-action="Summary" class="checkout-btn">
+                        Proceed to Checkout <i class="bi bi-arrow-right ms-2"></i>
+                    </a>
+
+                    <div class="text-center mt-3">
+                        <small class="text-muted">🔒 Secure Checkout</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="text-center py-5">
+            <div class="empty-cart-icon">🍳</div>
+            <h2 class="fw-bold text-dark">Your cart is empty</h2>
+            <p class="text-muted mb-4">Looks like you haven't added anything to your cart yet.</p>
+            <a asp-controller="Home" asp-action="Index" class="btn btn-dark btn-lg rounded-pill px-5">
+                Start Ordering
+            </a>
+        </div>
+    }
 </div>

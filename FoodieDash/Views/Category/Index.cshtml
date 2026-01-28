@@ -1,41 +1,241 @@
 ﻿@model IEnumerable<FoodieDash.Models.Category>
 
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "Inventory Management";
 }
 
-<h1>Index</h1>
+<style>
+    /* === INVENTORY DASHBOARD STYLES === */
+    .dashboard-header {
+        background: linear-gradient(135deg, #1e2024, #2d3436);
+        color: white;
+        padding: 40px 30px;
+        border-radius: 20px;
+        margin-bottom: -30px; /* Overlap effect */
+        position: relative;
+        z-index: 1;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    }
 
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
-<table class="table">
-    <thead>
-        <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.Name)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.DisplayOrder)
-            </th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.Name)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.DisplayOrder)
-            </td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
-            </td>
-        </tr>
-}
-    </tbody>
-</table>
+    .inventory-card {
+        border: none;
+        border-radius: 20px;
+        box-shadow: 0 15px 35px rgba(0,0,0,0.05);
+        overflow: hidden;
+        background: white;
+        position: relative;
+        z-index: 2;
+    }
+
+    /* Table Styling */
+    .table-custom thead th {
+        background-color: #f8f9fa;
+        color: #6c757d;
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.85rem;
+        letter-spacing: 0.5px;
+        padding: 15px 25px;
+        border-bottom: 2px solid #eee;
+    }
+
+    .table-custom tbody td {
+        padding: 20px 25px;
+        vertical-align: middle;
+        color: #495057;
+        font-weight: 500;
+        border-bottom: 1px solid #f2f2f2;
+    }
+
+    .table-custom tbody tr:last-child td {
+        border-bottom: none;
+    }
+
+    .table-custom tbody tr:hover {
+        background-color: #fffcfb;
+    }
+
+    /* Badge & Icons */
+    .order-badge {
+        background: #eef2ff;
+        color: #4f46e5;
+        padding: 8px 15px;
+        border-radius: 8px;
+        font-weight: 700;
+        font-size: 0.9rem;
+        display: inline-block;
+        min-width: 40px;
+        text-align: center;
+    }
+
+    .btn-action {
+        width: 35px;
+        height: 35px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 8px;
+        transition: all 0.2s;
+        margin-right: 5px;
+        color: #fff;
+        border: none;
+    }
+
+        .btn-action:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 10px rgba(0,0,0,0.1);
+        }
+
+    .btn-edit {
+        background-color: #ffca28;
+        color: #fff;
+    }
+
+    .btn-delete {
+        background-color: #ff5e62;
+        color: #fff;
+    }
+
+    /* Add Button */
+    .btn-add-new {
+        background: #ff5e62;
+        color: white;
+        padding: 12px 25px;
+        border-radius: 50px;
+        font-weight: 600;
+        box-shadow: 0 4px 15px rgba(255, 94, 98, 0.4);
+        border: none;
+        transition: transform 0.2s;
+        text-decoration: none;
+    }
+
+        .btn-add-new:hover {
+            background: #e04b4f;
+            transform: translateY(-2px);
+            color: white;
+        }
+</style>
+
+<div class="container py-4">
+
+    <div class="dashboard-header d-flex justify-content-between align-items-center">
+        <div>
+            <h2 class="fw-bold mb-1">📂 Category Inventory</h2>
+            <p class="mb-0 text-white-50">Manage your menu sections and display order</p>
+        </div>
+        <div class="text-end d-none d-md-block">
+            <h2 class="fw-bold mb-0">@Model.Count()</h2>
+            <small class="text-white-50 text-uppercase">Total Categories</small>
+        </div>
+    </div>
+
+    <div class="row justify-content-center px-3">
+        <div class="col-12 inventory-card p-0">
+
+            <div class="d-flex justify-content-between align-items-center p-4 border-bottom">
+                <div class="d-flex align-items-center">
+                    <span class="badge bg-light text-dark border me-2">Overview</span>
+
+                    <input type="text" id="searchInput" class="form-control form-control-sm border-0 bg-light rounded-pill px-3"
+                           placeholder="Search categories..." style="width: 200px;">
+                </div>
+
+                <a asp-controller="Category" asp-action="Create" class="btn-add-new">
+                    + Add New Category
+                </a>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-custom mb-0">
+                    <thead>
+                        <tr>
+                            <th scope="col" width="60%">Category Name</th>
+                            <th scope="col" width="20%" class="text-center">Display Order</th>
+                            <th scope="col" width="20%" class="text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="categoryTable">
+                        @if (Model.Any())
+                        {
+                            @foreach (var obj in Model.OrderBy(u => u.DisplayOrder))
+                            {
+                                <tr class="category-row">
+                                    <td class="cat-name">
+                                        <div class="d-flex align-items-center">
+                                            <div class="rounded-circle bg-light d-flex align-items-center justify-content-center me-3"
+                                                 style="width: 40px; height: 40px; color: #ff5e62; font-weight:bold;">
+                                                @obj.Name.Substring(0, 1).ToUpper()
+                                            </div>
+                                            <div>
+                                                <h6 class="mb-0 fw-bold text-dark">@obj.Name</h6>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="order-badge">#@obj.DisplayOrder</span>
+                                    </td>
+                                    <td class="text-end">
+                                        <div class="d-flex justify-content-end">
+                                            <a asp-controller="Category" asp-action="Edit" asp-route-id="@obj.Id"
+                                               class="btn-action btn-edit" title="Edit">
+                                                ✏️
+                                            </a>
+                                            <a asp-controller="Category" asp-action="Delete" asp-route-id="@obj.Id"
+                                               class="btn-action btn-delete" title="Delete">
+                                                🗑️
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="3" class="text-center py-5">
+                                    <div class="text-muted opacity-50">
+                                        <h1 class="display-4">📭</h1>
+                                        <p>No categories found. Start by adding one!</p>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+
+                        <tr id="noResultsRow" style="display:none;">
+                            <td colspan="3" class="text-center py-4 text-muted">
+                                🔍 No categories match your search.
+                            </td>
+                        </tr>
+
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.getElementById('searchInput').addEventListener('keyup', function() {
+        let searchValue = this.value.toLowerCase();
+        let tableRows = document.querySelectorAll('.category-row');
+        let hasVisibleRows = false;
+
+        tableRows.forEach(row => {
+            // Find the category name text inside the row
+            let categoryName = row.querySelector('.cat-name h6').textContent.toLowerCase();
+
+            if (categoryName.includes(searchValue)) {
+                row.style.display = ''; // Show
+                hasVisibleRows = true;
+            } else {
+                row.style.display = 'none'; // Hide
+            }
+        });
+
+        // Show/Hide "No Results" message
+        let noResultsRow = document.getElementById('noResultsRow');
+        if (noResultsRow) {
+            noResultsRow.style.display = hasVisibleRows ? 'none' : 'table-row';
+        }
+    });
+</script>
