@@ -20,6 +20,15 @@ namespace FoodieDash.Controllers
             return View(cart);
         }
 
+        // Inside CartController.cs
+        [HttpGet] // Or Post
+        public IActionResult AddToCartJson(int id)
+        {
+            // ... logic to add item to session/db ...
+
+            // Return the new total count
+            return Json(new { success = true, cartCount = 5 });
+        }
         public IActionResult Add(int id)
         {
             MenuItem? itemToAdd = _context.MenuItems.Find(id);
@@ -136,7 +145,33 @@ namespace FoodieDash.Controllers
             }
             return RedirectToAction(nameof(Index));
         }
+        // GET: /Cart/Decrease/5
+        // GET: /Cart/Decrease/5
+        public IActionResult Decrease(int id)
+        {
+            // 1. FIXED: Changed "Cart" to "MyCart" to match the rest of your controller
+            var cart = HttpContext.Session.GetObject<List<CartItem>>("MyCart") ?? new List<CartItem>();
 
+            // 2. FIXED: Changed 'x.MenuItemId' to 'x.MenuItem.Id'
+            var item = cart.FirstOrDefault(x => x.MenuItem.Id == id);
+
+            if (item != null)
+            {
+                if (item.Quantity > 1)
+                {
+                    item.Quantity--;
+                }
+                else
+                {
+                    cart.Remove(item);
+                }
+
+                // 3. FIXED: Changed "Cart" to "MyCart" here as well
+                HttpContext.Session.SetObject("MyCart", cart);
+            }
+
+            return Ok();
+        }
         public IActionResult OrderConfirmation(int id)
         {
             return View(id);

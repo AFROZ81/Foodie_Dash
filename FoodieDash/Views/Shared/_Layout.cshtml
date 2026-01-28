@@ -27,8 +27,11 @@
                             <a class="nav-link text-dark" asp-area="" asp-controller="MenuItem" asp-action="Index">Menu Items</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-controller="Cart" asp-action="Index">
-                                <i class="bi bi-cart-fill"></i> Cart
+                            <a class="nav-link" asp-controller="Cart" asp-action="Index">
+                                <span id="cart-count-badge" class="badge rounded-pill bg-danger" style="font-size: 1rem; padding: 8px 12px;">
+                                    @* Inject your real count here *@
+                                    0
+                                </span>
                             </a>
                         </li>
                     </ul>
