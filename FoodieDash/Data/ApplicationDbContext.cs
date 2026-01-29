@@ -12,5 +12,6 @@ namespace FoodieDash.Data
         public DbSet<MenuItem> MenuItems { get; set; }
         public DbSet<OrderHeader> OrderHeaders { get; set; }
         public DbSet<OrderDetail> OrderDetails { get; set; }
+        public DbSet<AppUser> AppUsers { get; set; }
     }
 }

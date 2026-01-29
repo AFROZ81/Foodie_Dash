@@ -411,6 +411,32 @@
         box-shadow: 0 6px 18px rgba(231,76,60,0.25);
     }
 
+    /* Smooth filter animation */
+    .food-item-card {
+        transition: all 0.35s ease;
+    }
+
+        .food-item-card.d-none {
+            opacity: 0;
+            transform: scale(0.95);
+            pointer-events: none;
+        }
+
+        .food-item-card:not(.d-none) {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+
+    .type-pill .count {
+        background: rgba(0,0,0,0.08);
+        padding: 2px 8px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 800;
+        margin-left: 6px;
+    }
+
 </style>
 
 <div class="hero-header">
@@ -456,12 +482,14 @@
 
                     <input type="radio" name="typeFilter" id="typeVeg" onclick="setType('Veg')">
                     <label for="typeVeg" class="type-pill veg">
-                        <span class="dot veg-dot"></span> Veg
+                        <span class="dot veg-dot"></span>
+                        Veg <span class="count" id="veg-count"></span>
                     </label>
 
                     <input type="radio" name="typeFilter" id="typeNonVeg" onclick="setType('Non-Veg')">
                     <label for="typeNonVeg" class="type-pill nonveg">
-                        <span class="dot nonveg-dot"></span> Non-Veg
+                        <span class="dot nonveg-dot"></span>
+                        Non-Veg <span class="count" id="nonveg-count"></span>
                     </label>
                 </div>
 
@@ -666,4 +694,21 @@
         let emptyMsg = document.getElementById('empty-msg');
         if(emptyMsg) emptyMsg.style.display = (count === 0) ? 'block' : 'none';
     }
+
+    function updateTypeCounts() {
+        let veg = 0, nonveg = 0;
+
+        document.querySelectorAll('.food-item-card').forEach(item => {
+            let type = item.getAttribute('data-type');
+            if (type === 'Veg') veg++;
+            if (type === 'Non-Veg') nonveg++;
+        });
+
+        document.getElementById('veg-count').innerText = veg;
+        document.getElementById('nonveg-count').innerText = nonveg;
+    }
+
+    // Call once on load
+    document.addEventListener('DOMContentLoaded', updateTypeCounts);
 </script>
+
