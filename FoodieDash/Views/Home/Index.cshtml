@@ -100,7 +100,6 @@
         }
 
     .filter-bar-sticky {
-        position: sticky;
         top: 10px;
         z-index: 900;
         background: rgba(255, 255, 255, 0.85);
@@ -338,6 +337,80 @@
             transform: translateY(10px);
         }
     }
+    /* === FOOD TYPE TOGGLE (VEG / NON-VEG) === */
+    .food-type-toggle {
+        display: flex;
+        gap: 8px;
+        background: white;
+        padding: 6px;
+        border-radius: 50px;
+        box-shadow: 0 8px 25px rgba(0,0,0,0.06);
+    }
+
+        .food-type-toggle input {
+            display: none;
+        }
+
+    .type-pill {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 18px;
+        border-radius: 50px;
+        font-weight: 700;
+        font-size: 0.9rem;
+        cursor: pointer;
+        transition: all 0.25s ease;
+        color: #636e72;
+        background: transparent;
+        border: 2px solid transparent;
+    }
+
+        .type-pill i {
+            font-size: 1rem;
+        }
+
+    /* Dots */
+    .dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+    }
+
+    .veg-dot {
+        background: #27ae60;
+    }
+
+    .nonveg-dot {
+        background: #e74c3c;
+    }
+
+    /* Hover */
+    .type-pill:hover {
+        background: #f8f9fa;
+    }
+
+    /* Active states */
+    #typeAll:checked + .type-pill.all {
+        background: #2d3436;
+        color: white;
+        box-shadow: 0 6px 18px rgba(45,52,54,0.3);
+    }
+
+    #typeVeg:checked + .type-pill.veg {
+        background: #eafaf1;
+        color: #27ae60;
+        border-color: #27ae60;
+        box-shadow: 0 6px 18px rgba(39,174,96,0.25);
+    }
+
+    #typeNonVeg:checked + .type-pill.nonveg {
+        background: #fdecea;
+        color: #e74c3c;
+        border-color: #e74c3c;
+        box-shadow: 0 6px 18px rgba(231,76,60,0.25);
+    }
+
 </style>
 
 <div class="hero-header">
@@ -375,14 +448,23 @@
                         }
                     </select>
                 </div>
-                <div class="btn-group shadow-sm rounded-pill ms-auto" role="group">
-                    <input type="radio" class="btn-check" name="typeFilter" id="typeAll" checked onclick="setType('all')">
-                    <label class="btn btn-outline-custom px-4 rounded-start-pill border-0" for="typeAll">All</label>
-                    <input type="radio" class="btn-check" name="typeFilter" id="typeVeg" onclick="setType('Veg')">
-                    <label class="btn btn-outline-custom px-4 border-0" for="typeVeg">Veg</label>
-                    <input type="radio" class="btn-check" name="typeFilter" id="typeNonVeg" onclick="setType('Non-Veg')">
-                    <label class="btn btn-outline-custom px-4 rounded-end-pill border-0" for="typeNonVeg">Non-Veg</label>
+                <div class="food-type-toggle ms-auto">
+                    <input type="radio" name="typeFilter" id="typeAll" checked onclick="setType('all')">
+                    <label for="typeAll" class="type-pill all">
+                        <i class="bi bi-grid"></i> All
+                    </label>
+
+                    <input type="radio" name="typeFilter" id="typeVeg" onclick="setType('Veg')">
+                    <label for="typeVeg" class="type-pill veg">
+                        <span class="dot veg-dot"></span> Veg
+                    </label>
+
+                    <input type="radio" name="typeFilter" id="typeNonVeg" onclick="setType('Non-Veg')">
+                    <label for="typeNonVeg" class="type-pill nonveg">
+                        <span class="dot nonveg-dot"></span> Non-Veg
+                    </label>
                 </div>
+
             </div>
 
             <div class="row g-4" id="foodContainer">
