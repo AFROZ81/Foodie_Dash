@@ -3,7 +3,6 @@
 ![.NET Core](https://img.shields.io/badge/ASP.NET%20Core-512BD4?style=for-the-badge&logo=dotnet&logoColor=white)
 ![Bootstrap](https://img.shields.io/badge/Bootstrap-563D7C?style=for-the-badge&logo=bootstrap&logoColor=white)
 ![SQL Server](https://img.shields.io/badge/SQL%20Server-CC2927?style=for-the-badge&logo=microsoft-sql-server&logoColor=white)
-![Status](https://img.shields.io/badge/Status-Completed-success?style=for-the-badge)
 
 > **FoodieDash** is a full-stack web application designed to streamline the online food ordering process. Built with robustness and scalability in mind, it bridges the gap between culinary businesses and hungry customers through an intuitive, responsive interface.
 
