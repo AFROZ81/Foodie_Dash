@@ -216,12 +216,12 @@
 
                     <div class="d-flex justify-content-between mb-3 text-muted">
                         <span>Subtotal</span>
-                        <span>₹@grandTotal</span>
+                        <span>₹@grandTotal.ToString("0.00")</span>
                     </div>
 
                     <div class="d-flex justify-content-between mb-3 text-muted">
                         <span>Taxes & Fees (5%)</span>
-                        <span>₹@(grandTotal * 0.05)</span>
+                        <span>₹@((grandTotal * 0.05).ToString("0.00"))</span>
                     </div>
 
                     <div class="d-flex justify-content-between mb-3 text-muted">
@@ -233,7 +233,7 @@
 
                     <div class="d-flex justify-content-between align-items-center mb-4">
                         <span class="fw-bold fs-5">Total</span>
-                        <span class="fw-bolder fs-3 text-dark">₹@(grandTotal + (grandTotal * 0.05))</span>
+                        <span class="fw-bolder fs-3 text-dark">₹@((grandTotal + (grandTotal * 0.05)).ToString("0.00"))</span>
                     </div>
 
                     <a asp-action="Summary" class="checkout-btn">
