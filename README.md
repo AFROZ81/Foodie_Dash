@@ -95,7 +95,7 @@ The application features distinct interfaces based on the logged-in user:
 
 **Afroz** - Full Stack Developer
 
-* **GitHub:** [github.com/yourusername](https://github.com/AFROZ81)
+* **GitHub:** [github.com/AFROZ81](https://github.com/AFROZ81)
 * **Email:** [alamamaan308@gmail.com]
 
 ---
