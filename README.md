@@ -1,4 +1,4 @@
-# 🍔 FoodieDash - Modern Food Ordering System
+# FoodieDash - Modern Food Ordering System
 
 <div align="center">
 
@@ -12,19 +12,19 @@
 
 ---
 
-## 📑 Table of Contents
-- [📖 Overview](#-overview)
-- [✨ Key Features](#-key-features)
-- [🏗️ Tech Stack & Architecture](#-tech-stack--architecture)
-- [💻 User Roles](#-user-roles)
-- [🚀 Getting Started](#-getting-started)
-- [📸 Application Previews](#-application-previews)
-- [🔮 Future Roadmap](#-future-roadmap)
-- [📬 Contact](#-contact)
+## Table of Contents
+- [Overview](#-overview)
+- [Key Features](#-key-features)
+- [Tech Stack & Architecture](#-tech-stack--architecture)
+- [User Roles](#-user-roles)
+- [Getting Started](#-getting-started)
+- [Application Previews](#-application-previews)
+- [Future Roadmap](#-future-roadmap)
+- [Contact](#-contact)
 
 ---
 
-## 📖 Overview
+## Overview
 
 **FoodieDash** solves the problem of complex food ordering by offering a simplified, visually appealing platform. It leverages the **Model-View-Controller (MVC)** architectural pattern to ensure a clean separation of concerns, making the codebase easy to maintain and scale.
 
@@ -32,22 +32,22 @@ The application allows users to browse diverse food categories, manage a dynamic
 
 ---
 
-## ✨ Key Features
+## Key Features
 
-### 🎨 User Experience (Frontend)
+### User Experience (Frontend)
 * **Responsive Design:** Fully optimized for Desktop, Tablet, and Mobile using Bootstrap 5 grid systems.
 * **Dynamic UI Interactions:** Custom CSS animations, sliding navigation underlines, and interactive buttons.
 * **Real-time Cart Updates:** The navigation bar updates the cart count instantly as items are added.
 * **Rich Menu Browsing:** Users can filter items by categories and view detailed descriptions and prices.
 
-### ⚙️ Backend Logic
+### Backend Logic
 * **Secure Authentication:** Implements **ASP.NET Core Identity** for secure User Registration, Login, and Logout processes.
 * **Role-Based Authorization:** Custom logic ensures that sensitive Admin areas are completely inaccessible to standard users.
 * **Data Integrity:** Uses **Entity Framework Core** for efficient database transactions and data consistency.
 
 ---
 
-## 🏗️ Tech Stack & Architecture
+## Tech Stack & Architecture
 
 This project is built on the Microsoft technology stack, ensuring high performance and security.
 
@@ -62,7 +62,7 @@ This project is built on the Microsoft technology stack, ensuring high performan
 
 ---
 
-## 💻 User Roles
+## User Roles
 
 The application features distinct interfaces based on the logged-in user:
 
@@ -86,7 +86,7 @@ The application features distinct interfaces based on the logged-in user:
 
 ---
 
-## 🔮 Future Roadmap
+## Future Roadmap
 
 * [ ] **Payment Gateway Integration:** Stripe or PayPal for real transactions.
 * [ ] **Order History:** Allow users to view past orders.
@@ -95,7 +95,7 @@ The application features distinct interfaces based on the logged-in user:
 
 ---
 
-## 📬 Contact
+## Contact
 
 **Afroz** - Full Stack Developer
 
